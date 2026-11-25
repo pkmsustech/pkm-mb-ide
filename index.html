@@ -923,27 +923,33 @@ body.theme-dark .badge-Advanced { background: rgba(239,68,68,0.2); color: #fca5a
           <input id="siPass" class="form-input" type="password" placeholder="Enter your password" />
         </div>
         <div class="auth-field">
-          <label>PKM License Key</label>
+          <label>Your Unique PKM License Key</label>
           <input id="siLicense" class="form-input" type="text" placeholder="PKM-PRO-XXXX-XXXX-XXXX" />
         </div>
-        <button id="siSubmitBtn" class="btn btn-primary" style="width:100%;justify-content:center;height:36px;font-weight:700;">Sign In &amp; Unlock IDE</button>
-        <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px;text-align:center;">
-          Master Test Key: <code>PKM-PRO-1513-090B-AB56</code> &bull; Admin Keygen in <code>admin-tools/</code>
+        <button id="siSubmitBtn" class="btn btn-primary" style="width:100%;justify-content:center;height:36px;font-weight:700;">Sign In &amp; Activate License</button>
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px;text-align:center;line-height:1.4;">
+          New user? Click <b>New User Sign Up</b> above to register and receive your unique email- &amp; device-locked License Key.
         </div>
       </div>
 
       <div id="authSignUpForm" style="display:none;">
-        <div class="auth-field">
-          <label>Full Name</label>
-          <input id="suName" class="form-input" type="text" placeholder="e.g. Premkumar Manoharan" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="auth-field">
+            <label>Full Name *</label>
+            <input id="suName" class="form-input" type="text" placeholder="e.g. Ananya Sharma" />
+          </div>
+          <div class="auth-field">
+            <label>Mobile / WhatsApp *</label>
+            <input id="suPhone" class="form-input" type="tel" placeholder="+91 98765 43210" />
+          </div>
         </div>
         <div class="auth-field">
-          <label>Email Address</label>
+          <label>Email Address (License Key will be sent here) *</label>
           <input id="suEmail" class="form-input" type="email" placeholder="name@institution.edu" />
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div class="auth-field">
-            <label>School / College / Org</label>
+            <label>School / College / Org *</label>
             <input id="suOrg" class="form-input" type="text" placeholder="DSCE Bengaluru" />
           </div>
           <div class="auth-field">
@@ -952,14 +958,28 @@ body.theme-dark .badge-Advanced { background: rgba(239,68,68,0.2); color: #fca5a
               <option value="Student">Student</option>
               <option value="Faculty / Trainer">Faculty / Trainer</option>
               <option value="Engineer / Maker">Engineer / Maker</option>
+              <option value="Institution Admin">Institution Admin</option>
             </select>
           </div>
         </div>
-        <div class="auth-field">
-          <label>Create Password (min 6 chars)</label>
-          <input id="suPass" class="form-input" type="password" placeholder="Create a password" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="auth-field">
+            <label>License Edition</label>
+            <select id="suTier" class="form-input">
+              <option value="EDU">EDU (Student / Lab)</option>
+              <option value="PRO" selected>PRO (Full AI &amp; Robotics)</option>
+              <option value="INSTITUTION">INSTITUTION (Department)</option>
+            </select>
+          </div>
+          <div class="auth-field">
+            <label>Create Password (min 6) *</label>
+            <input id="suPass" class="form-input" type="password" placeholder="Min 6 characters" />
+          </div>
         </div>
-        <button id="suSubmitBtn" class="btn btn-run" style="width:100%;justify-content:center;height:36px;font-weight:700;">Register Account</button>
+        <button id="suSubmitBtn" class="btn btn-run" style="width:100%;justify-content:center;height:36px;font-weight:700;">Register &amp; Send My Unique License Key</button>
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:7px;text-align:center;line-height:1.35;">
+          Your registration details are sent to <b>PKM Sustainable Tech Solutions LLP</b> and your unique single-user License Key is emailed to you immediately.
+        </div>
       </div>
     </div>
   </div>
@@ -4178,16 +4198,23 @@ window.PKM_WEB_UPLOADER = (function () {
   return { setCallbacks, connect, disconnect, pulseReset, flashMicroPython, flashArduinoHex, SAMPLE_UNO_BLINK_HEX };
 })();
 
-// PKM Maker Block IDE v1.0 — Mandatory User Registration, Sign In & License Key Verification
+// PKM Maker Block IDE v1.0 — Mandatory User Registration, Unique Email- & Device-Locked Licensing
 window.PKM_AUTH = (function () {
-  const USERS_KEY = 'pkm_registered_users_v79';
-  const SESS_KEY = 'pkm_active_session_v79';
-  const PROJ_PREFIX = 'pkm_web_projects_v79_';
-  const MASTER_KEYS = {
-    'PKM-PRO-1513-090B-AB56': 'PRO',
-    'PKM-EDU-2026-DSCE-0001': 'EDU',
-    'PKM-INST-2026-PKM1-9999': 'INSTITUTION'
-  };
+  // Paste your deployed Google Apps Script Web App URL below before uploading index.html to GitHub Pages:
+  const DEFAULT_REG_API_URL = 'https://script.google.com/macros/s/AKfycbz9SO-6XL4obJu60xP4mZeChBkSpBIZbaHyM7453MyYn7AsZyCfeKUeYHdxRPMoYEdf/exec';
+  const API_URL_KEY = 'pkm_reg_api_url_v10';
+  const USERS_KEY = 'pkm_registered_users_v10';
+  const SESS_KEY = 'pkm_active_session_v10';
+  const DEVICE_KEY = 'pkm_device_id_v10';
+  const PROJ_PREFIX = 'pkm_web_projects_v10_';
+
+  function getApiUrl() {
+    try {
+      const custom = localStorage.getItem(API_URL_KEY);
+      if (custom && custom.startsWith('https://')) return custom.trim();
+    } catch (_) {}
+    return DEFAULT_REG_API_URL;
+  }
 
   function hashStr(str) {
     let h = 2166136261;
@@ -4196,6 +4223,25 @@ window.PKM_AUTH = (function () {
       h = Math.imul(h, 16777619);
     }
     return (h >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  }
+
+  function getDeviceId() {
+    try {
+      let did = localStorage.getItem(DEVICE_KEY);
+      if (did && did.startsWith('PKM-DEV-')) return did;
+      const fp = [
+        navigator.userAgent || '',
+        navigator.language || '',
+        screen.width + 'x' + screen.height,
+        Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        Math.random().toString(36).slice(2, 10)
+      ].join('|');
+      did = 'PKM-DEV-' + hashStr(fp) + '-' + hashStr(fp + '|PKM').slice(0, 4);
+      localStorage.setItem(DEVICE_KEY, did);
+      return did;
+    } catch (_) {
+      return 'PKM-DEV-FALLBACK';
+    }
   }
 
   function expectedKeyFor(email, tier) {
@@ -4207,13 +4253,16 @@ window.PKM_AUTH = (function () {
   }
 
   function verifyLicenseKey(email, keyRaw) {
+    const cleanEmail = (email || '').trim().toLowerCase();
     const k = (keyRaw || '').trim().toUpperCase();
-    if (!k) return { ok: false, error: 'License Key is required.' };
-    if (MASTER_KEYS[k]) return { ok: true, tier: MASTER_KEYS[k] };
+    if (!k) return { ok: false, error: 'Your unique PKM License Key is required.' };
     for (const tier of ['EDU', 'PRO', 'INSTITUTION']) {
-      if (k === expectedKeyFor(email, tier)) return { ok: true, tier };
+      if (k === expectedKeyFor(cleanEmail, tier)) return { ok: true, tier };
     }
-    return { ok: false, error: 'Invalid License Key for this email. Contact PKM Sustainable Tech Solutions LLP or use your issued key.' };
+    return {
+      ok: false,
+      error: 'Access Denied: This License Key is invalid or belongs to another registered email. Each user must use their own unique key.'
+    };
   }
 
   function getUsers() {
@@ -4223,29 +4272,148 @@ window.PKM_AUTH = (function () {
     try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch (_) {}
   }
 
-  function registerUser({ name, email, org, role, password }) {
-    const n = (name || '').trim(), e = (email || '').trim().toLowerCase(), p = (password || '');
+  async function registerUser({ name, phone, email, org, role, tier, password }) {
+    const n = (name || '').trim();
+    const ph = (phone || '').trim();
+    const e = (email || '').trim().toLowerCase();
+    const o = (org || '').trim();
+    const r = role || 'Student';
+    const t = (tier || 'PRO').toUpperCase();
+    const p = password || '';
+
     if (!n) return { ok: false, error: 'Please enter your full name.' };
+    if (!ph || ph.replace(/\D/g, '').length < 8) return { ok: false, error: 'Please enter a valid mobile/WhatsApp number.' };
     if (!e || !e.includes('@')) return { ok: false, error: 'Please enter a valid email address.' };
+    if (!o) return { ok: false, error: 'Please enter your school, college, or organization.' };
     if (p.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+
+    const deviceId = getDeviceId();
+    const passHash = hashStr(p + '|' + e);
+    const regId = 'PKM-REG-' + hashStr(e + '|' + Date.now()).slice(0, 6);
+    const apiUrl = getApiUrl();
+
+    // Save local record
     const users = getUsers();
-    if (users.some(u => u.email === e)) return { ok: false, error: 'This email is already registered. Please Sign In.' };
-    const regId = 'PKM-REG-' + hashStr(e + Date.now()).slice(0, 6);
-    users.push({ name: n, email: e, org: (org || '').trim(), role: role || 'Student', passHash: hashStr(p + '|' + e), regId, createdAt: new Date().toISOString() });
-    saveUsers(users);
-    return { ok: true, regId, email: e };
+    const existing = users.find(u => u.email === e);
+    if (!existing) {
+      users.push({ name: n, phone: ph, email: e, org: o, role: r, tier: t, passHash, regId, boundDeviceId: deviceId, createdAt: new Date().toISOString() });
+      saveUsers(users);
+    }
+
+    // Send registration to PKM Google Apps Script Server (emails Admin + emails User their unique key)
+    if (apiUrl && apiUrl.startsWith('https://')) {
+      try {
+        const resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'register',
+            name: n, phone: ph, email: e, org: o, role: r, tier: t,
+            passHash, regId, deviceId,
+            origin: location.origin
+          })
+        });
+        const data = await resp.json();
+        if (!data.ok) return { ok: false, error: data.error || 'Registration server rejected request.' };
+        return {
+          ok: true,
+          remoteSent: true,
+          regId: data.regId || regId,
+          email: e,
+          message: data.message || `Registration complete! Your details were sent to PKM Sustainable Tech Solutions LLP and your unique License Key has been emailed to ${e}.`
+        };
+      } catch (err) {
+        return {
+          ok: false,
+          error: 'Could not reach registration server (' + err.message + '). Please check your internet connection and try again.'
+        };
+      }
+    }
+
+    // Fallback when Google Apps Script URL has not been pasted yet
+    return {
+      ok: true,
+      remoteSent: false,
+      regId: existing ? existing.regId : regId,
+      email: e,
+      fallbackKey: expectedKeyFor(e, t)
+    };
   }
 
-  function signIn({ email, password, licenseKey }) {
-    const e = (email || '').trim().toLowerCase(), p = (password || '');
+  async function signIn({ email, password, licenseKey }) {
+    const e = (email || '').trim().toLowerCase();
+    const p = password || '';
+    const k = (licenseKey || '').trim().toUpperCase();
     if (!e || !p) return { ok: false, error: 'Enter your registered email and password.' };
-    const users = getUsers();
-    const u = users.find(x => x.email === e);
-    if (!u) return { ok: false, error: 'Account not found. Please click "New User Sign Up" first.' };
-    if (u.passHash !== hashStr(p + '|' + e)) return { ok: false, error: 'Incorrect password.' };
-    const lic = verifyLicenseKey(e, licenseKey);
+
+    // 1. Verify cryptographic binding between THIS email and THIS license key
+    const lic = verifyLicenseKey(e, k);
     if (!lic.ok) return lic;
-    const session = { name: u.name, email: u.email, org: u.org, role: u.role, tier: lic.tier, licenseKey: (licenseKey || '').trim().toUpperCase() };
+
+    const passHash = hashStr(p + '|' + e);
+    const deviceId = getDeviceId();
+    const users = getUsers();
+    let u = users.find(x => x.email === e);
+
+    // Local device lock check if account already exists on this browser
+    if (u) {
+      if (u.passHash !== passHash) return { ok: false, error: 'Incorrect password.' };
+      if (u.boundDeviceId && u.boundDeviceId !== deviceId) {
+        return { ok: false, error: 'License Key Locked: This key is bound to another device. Contact PKM Sustainable Tech Solutions LLP.' };
+      }
+    }
+
+    // 2. Verify with PKM Google Apps Script Server & lock to single device
+    const apiUrl = getApiUrl();
+    if (apiUrl && apiUrl.startsWith('https://')) {
+      try {
+        const resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'activate',
+            email: e,
+            passHash,
+            licenseKey: k,
+            deviceId
+          })
+        });
+        const data = await resp.json();
+        if (!data.ok) return { ok: false, error: data.error || 'License verification failed on server.' };
+        u = {
+          name: data.name || (u && u.name) || e.split('@')[0],
+          phone: data.phone || (u && u.phone) || '',
+          email: e,
+          org: data.org || (u && u.org) || '',
+          role: data.role || (u && u.role) || 'Student',
+          tier: data.tier || lic.tier,
+          passHash,
+          boundDeviceId: deviceId
+        };
+        const idx = users.findIndex(x => x.email === e);
+        if (idx >= 0) users[idx] = u; else users.push(u);
+        saveUsers(users);
+      } catch (err) {
+        if (!u) {
+          return { ok: false, error: 'Unable to verify license online (' + err.message + '). Connect to the internet to activate your unique key.' };
+        }
+      }
+    } else {
+      if (!u) return { ok: false, error: 'Account not found on this device. Please click "New User Sign Up" first.' };
+      u.boundDeviceId = deviceId;
+      saveUsers(users);
+    }
+
+    const session = {
+      name: u.name,
+      phone: u.phone || '',
+      email: u.email,
+      org: u.org,
+      role: u.role,
+      tier: lic.tier,
+      licenseKey: k,
+      deviceId
+    };
     try { localStorage.setItem(SESS_KEY, JSON.stringify(session)); } catch (_) {}
     return { ok: true, session };
   }
@@ -4263,7 +4431,7 @@ window.PKM_AUTH = (function () {
     try { localStorage.setItem(PROJ_PREFIX + (email || 'local'), JSON.stringify(list || [])); } catch (_) {}
   }
 
-  return { registerUser, signIn, getSession, signOut, getUserProjects, saveUserProjects, expectedKeyFor };
+  return { registerUser, signIn, getSession, signOut, getUserProjects, saveUserProjects, expectedKeyFor, getDeviceId };
 })();
 // PKM Maker Block IDE v1.0 — Real-Photo Textured 3D Hardware Models & Animated Assemblies
 // Maps actual studio hardware photographs onto 3D extruded PCB slabs + animated 3D layers!
@@ -6661,30 +6829,51 @@ window.PKM_3D_SIM = (function () {
       $('#authErrBox').style.display = 'none'; $('#authOkBox').style.display = 'none';
     });
 
-    // Sign Up Handler
-    if ($('#suSubmitBtn')) $('#suSubmitBtn').addEventListener('click', () => {
-      const res = window.PKM_AUTH.registerUser({
-        name: $('#suName').value,
-        email: $('#suEmail').value,
-        org: $('#suOrg').value,
-        role: $('#suRole').value,
-        password: $('#suPass').value
-      });
-      if (!res.ok) return showAuthErr(res.error);
-      showAuthOk(`<b>Registration Submitted!</b><br>Registration ID: <code>${res.regId}</code><br>Send this Registration ID &amp; email (<b>${res.email}</b>) to <b>PKM Sustainable Tech Solutions LLP</b> to receive your License Key, then Sign In.`);
-      $('#siEmail').value = res.email;
+    // Async Sign Up Handler (Sends registration to PKM Admin + emails user their unique License Key)
+    if ($('#suSubmitBtn')) $('#suSubmitBtn').addEventListener('click', async () => {
+      const btn = $('#suSubmitBtn');
+      const origTxt = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Registering & Issuing Unique Key...';
+      try {
+        const res = await window.PKM_AUTH.registerUser({
+          name: $('#suName').value,
+          phone: $('#suPhone') ? $('#suPhone').value : '',
+          email: $('#suEmail').value,
+          org: $('#suOrg').value,
+          role: $('#suRole').value,
+          tier: $('#suTier') ? $('#suTier').value : 'PRO',
+          password: $('#suPass').value
+        });
+        if (!res.ok) return showAuthErr(res.error);
+        if (res.remoteSent) {
+          showAuthOk(`<b>Registration Complete!</b><br>Registration ID: <code>${res.regId}</code><br>${res.message}<br>Switch to <b>Sign In &amp; Activate</b> once you receive your email.`);
+        } else {
+          showAuthOk(`<b>Local Preview Registration Saved!</b><br>Registration ID: <code>${res.regId}</code><br><i>(Configure your Google Apps Script URL in <code>PKM_AUTH</code> to enable automatic email delivery.)</i><br>Your unique email-bound key: <code>${res.fallbackKey}</code>`);
+        }
+        $('#siEmail').value = res.email;
+      } finally {
+        btn.disabled = false; btn.textContent = origTxt;
+      }
     });
 
-    // Sign In + License Activation Handler
-    if ($('#siSubmitBtn')) $('#siSubmitBtn').addEventListener('click', () => {
-      const res = window.PKM_AUTH.signIn({
-        email: $('#siEmail').value,
-        password: $('#siPass').value,
-        licenseKey: $('#siLicense').value
-      });
-      if (!res.ok) return showAuthErr(res.error);
-      unlockWithSession(res.session);
-      if (window.__pkmToast) window.__pkmToast(`Welcome, ${res.session.name} (${res.session.tier} License Active)`);
+    // Async Sign In + Unique Email- & Device-Locked License Activation Handler
+    if ($('#siSubmitBtn')) $('#siSubmitBtn').addEventListener('click', async () => {
+      const btn = $('#siSubmitBtn');
+      const origTxt = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Verifying License & Device...';
+      try {
+        const res = await window.PKM_AUTH.signIn({
+          email: $('#siEmail').value,
+          password: $('#siPass').value,
+          licenseKey: $('#siLicense').value
+        });
+        if (!res.ok) return showAuthErr(res.error);
+        unlockWithSession(res.session);
+        if (window.__pkmRenderProfile) window.__pkmRenderProfile();
+        if (window.__pkmToast) window.__pkmToast(`Welcome, ${res.session.name} (${res.session.tier} License Active)`);
+      } finally {
+        btn.disabled = false; btn.textContent = origTxt;
+      }
     });
 
     // Sign Out
@@ -7108,7 +7297,7 @@ if ($('#spGreenFlagBtn')) $('#spGreenFlagBtn').onclick = () => {
     if ($('#profLicenseKey')) $('#profLicenseKey').textContent = sess.licenseKey || 'ACTIVE';
 
     const c = loadContact(sess.email);
-    if ($('#profPhone')) $('#profPhone').value = c.phone || '';
+    if ($('#profPhone')) $('#profPhone').value = c.phone || sess.phone || '';
     if ($('#profCity')) $('#profCity').value = c.city || '';
     if ($('#profDept')) $('#profDept').value = c.dept || '';
     if ($('#profWeb')) $('#profWeb').value = c.web || '';
